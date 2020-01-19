@@ -4,8 +4,6 @@ import { Marker, Callout } from 'react-native-maps';
 
 function DeveloperItem({ navigation, developer }) {
 
-    console.log('OlA JULIANI ' ,developer);
-
     return (
         <Marker coordinate={{ latitude: developer.location.coordinates[1], longitude: developer.location.coordinates[0]}}>
             <Image style={styles.avatar} source={{ uri: developer.avatar_url }} />

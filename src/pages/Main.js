@@ -4,12 +4,13 @@ import MapView from 'react-native-maps';
 import { requestPermissionsAsync, getCurrentPositionAsync } from 'expo-location';
 
 import api from '../services/api'; 
+import * as socket from '../services/socket';
 import SearchForm from '../components/searchForm';
 import DeveloperItem from '../components/developerItem';
 
 function Main({ navigation }) {
-    const [developers, setDevelopers] = useState([])
-    const [currentLocation, setCurrentLocation] = useState(null)
+    const [developers, setDevelopers] = useState([]);
+    const [currentLocation, setCurrentLocation] = useState(null);
 
     useEffect(() => {
         async function loadInitialPosition() {
@@ -35,19 +36,30 @@ function Main({ navigation }) {
         loadInitialPosition();
     }, []);
 
+    useEffect(() => {
+        socket.subscribeToNewDevs(dev => setDevelopers([...developers, dev]));
+    }, [developers])
 
-    async function loadDevelopers(techs) {
+
+    function setupWebSocket(latitude, longitude, techs) {
+        socket.disconnect();
+
+        socket.connect(latitude, longitude, techs);
+    }
+
+    async function loadDevelopers(technologies) {
+
         const { latitude, longitude } = currentLocation;
 
         const response = await api.get('/search', {
             params: {
                 latitude,
                 longitude,
-                techs
+                techs: technologies
             }
         });
-
         setDevelopers(response.data);
+        setupWebSocket(latitude, longitude, technologies);
     }
 
     function handleNewLocation(region) {
